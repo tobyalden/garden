@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-	<meta title="gb_jam" package="com.example.app" version="1.0.0" company="" />
+	<meta title="Garden" package="com.example.app" version="1.0.0" company="" />
 
  	<app file="Main" main="Main" path="bin" />
 
 	<window fps="60" background="0xDAEFD7" />
-	<!-- <window width="320" height="288" resizable="false" unless="mobile" /> -->
-	<window width="160" height="144" resizable="false" unless="mobile" />
+	<window width="320" height="288" resizable="false" unless="mobile" />
 	<window fullscreen="true" if="mobile" />
 	<window orientation="landscape" vsync="true" antialiasing="0" if="cpp" />
 

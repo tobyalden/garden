@@ -1,8 +1,8 @@
 package entities;
 
-import com.haxepunk.tmx.TmxEntity;
-import com.haxepunk.tmx.TmxMap;
-import com.haxepunk.Entity;
+import com.haxepunk.*;
+import com.haxepunk.tmx.*;
+import com.haxepunk.graphics.*;
 
 class Level extends TmxEntity
 {

@@ -9,18 +9,18 @@ class Player extends ActiveEntity
 {
 
   public static inline var SPEED = 1;
+  public static inline var GRAVITY = 0.15;
+  public static inline var TERMINAL_VELOCITY = 2;
+  public static inline var JUMP_POWER = 2;
 
 	public function new(x:Int, y:Int)
 	{
 		super(x, y);
-    sprite = new Spritemap("graphics/player.png", 16, 16);
-    sprite.add("down", [0, 1], 6);
-    sprite.add("right", [2, 3], 6);
-    sprite.add("left", [4, 5], 6);
-    sprite.add("up", [6, 7], 6);
-    sprite.add("roll", [6, 8, 9, 10], 6);
-    sprite.play("down");
-    setHitbox(11, 15, -3, -1);
+    sprite = new Spritemap("graphics/player.png", 32, 16);
+    sprite.add("idle", [0]);
+    sprite.add("run", [0, 1], 6);
+    sprite.add("attack", [2, 3], 6, false);
+    setHitbox(10, 16, -11, 0);
 		finishInitializing();
 	}
 
@@ -35,14 +35,20 @@ class Player extends ActiveEntity
     else {
       velocity.x = 0;
     }
-    if(Input.check(Key.UP)) {
-      velocity.y = -SPEED;
-    }
-    else if(Input.check(Key.DOWN)) {
-      velocity.y = SPEED;
+
+    if(isOnGround()) {
+      velocity.y = 0;
     }
     else {
-      velocity.y = 0;
+      velocity.y = Math.min(TERMINAL_VELOCITY, velocity.y + GRAVITY);
+    }
+
+    if(isOnGround() && Input.pressed(Key.Z)) {
+      velocity.y -= JUMP_POWER;
+    }
+
+    if(Input.pressed(Key.X)) {
+      sprite.play("attack", false);
     }
 
     moveBy(velocity.x, velocity.y, "walls");
@@ -58,20 +64,19 @@ class Player extends ActiveEntity
 
   private function animate()
   {
+    if(sprite.currentAnim == "attack" && !sprite.complete) {
+      return;
+    }
     if(velocity.x > 0) {
-      sprite.play("right");
+      sprite.play("run");
+      sprite.flipped = false;
     }
     else if(velocity.x < 0) {
-      sprite.play("left");
-    }
-    else if(velocity.y > 0) {
-      sprite.play("down");
-    }
-    else if(velocity.y < 0) {
-      sprite.play("up");
+      sprite.play("run");
+      sprite.flipped = true;
     }
     else {
-      sprite.stop();
+      sprite.play("idle");
     }
   }
 }
