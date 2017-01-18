@@ -10,8 +10,12 @@ class Player extends ActiveEntity
 
   public static inline var SPEED = 1;
   public static inline var GRAVITY = 0.15;
+  public static inline var BAT_GRAVITY = 0.03;
   public static inline var TERMINAL_VELOCITY = 2;
   public static inline var JUMP_POWER = 2;
+  public static inline var FLAP_POWER = 1.1;
+
+  private var isBat:Bool;
 
 	public function new(x:Int, y:Int)
 	{
@@ -20,7 +24,10 @@ class Player extends ActiveEntity
     sprite.add("idle", [0]);
     sprite.add("run", [0, 1], 6);
     sprite.add("attack", [2, 3], 6, false);
+    sprite.add("bat", [5]);
+    sprite.add("batflap", [6], 12, false);
     setHitbox(10, 16, -11, 0);
+    isBat = false;
 		finishInitializing();
 	}
 
@@ -40,11 +47,29 @@ class Player extends ActiveEntity
       velocity.y = 0;
     }
     else {
-      velocity.y = Math.min(TERMINAL_VELOCITY, velocity.y + GRAVITY);
+      var gravity = GRAVITY;
+      if(isBat) {
+        gravity = BAT_GRAVITY;
+      }
+      velocity.y = Math.min(TERMINAL_VELOCITY, velocity.y + gravity);
+      velocity.y = Math.max(-TERMINAL_VELOCITY, velocity.y);
     }
 
-    if(isOnGround() && Input.pressed(Key.Z)) {
-      velocity.y -= JUMP_POWER;
+    if(Input.pressed(Key.UP)) {
+      if(isBat) {
+        velocity.y -= FLAP_POWER;
+        sprite.play("batflap");
+        if(isOnCeiling()) {
+          velocity.y = -velocity.y;
+        }
+      }
+      else if(isOnGround()) {
+        velocity.y -= JUMP_POWER;
+      }
+    }
+
+    if(Input.pressed(Key.Z)) {
+      isBat = !isBat;
     }
 
     if(Input.pressed(Key.X)) {
@@ -64,6 +89,15 @@ class Player extends ActiveEntity
 
   private function animate()
   {
+    if(isBat) {
+        if(sprite.currentAnim == "batflap" && !sprite.complete) {
+          sprite.play("batflap");
+        }
+        else {
+          sprite.play("bat");
+        }
+        return;
+    }
     if(sprite.currentAnim == "attack" && !sprite.complete) {
       return;
     }
