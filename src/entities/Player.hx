@@ -10,10 +10,11 @@ class Player extends ActiveEntity
 
   public static inline var SPEED = 1;
   public static inline var GRAVITY = 0.15;
-  public static inline var BAT_GRAVITY = 0.03;
+  public static inline var BAT_GRAVITY = 0.06;
   public static inline var TERMINAL_VELOCITY = 2;
+  public static inline var BAT_TERMINAL_VELOCITY = 4;
   public static inline var JUMP_POWER = 2;
-  public static inline var FLAP_POWER = 1.1;
+  public static inline var FLAP_POWER = 1.5;
 
   private var isBat:Bool;
 
@@ -33,7 +34,10 @@ class Player extends ActiveEntity
 
   public override function update()
   {
-    if(Input.check(Key.LEFT)) {
+    if(isOnGround() && isBat) {
+      velocity.x = 0;
+    }
+    else if(Input.check(Key.LEFT)) {
       velocity.x = -SPEED;
     }
     else if(Input.check(Key.RIGHT)) {
@@ -47,21 +51,20 @@ class Player extends ActiveEntity
       velocity.y = 0;
     }
     else {
-      var gravity = GRAVITY;
       if(isBat) {
-        gravity = BAT_GRAVITY;
+        velocity.y = Math.min(BAT_TERMINAL_VELOCITY, velocity.y + BAT_GRAVITY);
+        velocity.y = Math.max(-BAT_TERMINAL_VELOCITY, velocity.y);
       }
-      velocity.y = Math.min(TERMINAL_VELOCITY, velocity.y + gravity);
-      velocity.y = Math.max(-TERMINAL_VELOCITY, velocity.y);
+      else {
+        velocity.y = Math.min(TERMINAL_VELOCITY, velocity.y + GRAVITY);
+        velocity.y = Math.max(-TERMINAL_VELOCITY, velocity.y);
+      }
     }
 
     if(Input.pressed(Key.UP)) {
       if(isBat) {
         velocity.y -= FLAP_POWER;
         sprite.play("batflap");
-        if(isOnCeiling()) {
-          velocity.y = -velocity.y;
-        }
       }
       else if(isOnGround()) {
         velocity.y -= JUMP_POWER;
@@ -77,6 +80,10 @@ class Player extends ActiveEntity
     }
 
     moveBy(velocity.x, velocity.y, "walls");
+
+    if(isOnCeiling()) {
+      velocity.y = -velocity.y/2.8;
+    }
 
     if(Input.check(Key.ESCAPE)) {
       System.exit(0);
