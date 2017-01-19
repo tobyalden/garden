@@ -13,6 +13,8 @@ class Player extends ActiveEntity
   public static inline var BAT_GRAVITY = 0.06;
   public static inline var TERMINAL_VELOCITY = 2;
   public static inline var BAT_TERMINAL_VELOCITY = 4;
+  public static inline var BAT_MAX_HORIZONTAL_VELOCITY = 6;
+  public static inline var BAT_HORIZONTAL_DECCEL = 0.01;
   public static inline var JUMP_POWER = 2;
   public static inline var FLAP_POWER = 1.5;
 
@@ -38,13 +40,18 @@ class Player extends ActiveEntity
       velocity.x = 0;
     }
     else if(Input.check(Key.LEFT)) {
-      velocity.x = -SPEED;
+      velocity.x = Math.min(velocity.x, -SPEED);
     }
     else if(Input.check(Key.RIGHT)) {
-      velocity.x = SPEED;
+      velocity.x = Math.max(velocity.x, SPEED);
     }
     else {
       velocity.x = 0;
+    }
+
+    if(isBat) {
+      velocity.x = Math.min(velocity.x, BAT_MAX_HORIZONTAL_VELOCITY);
+      velocity.x = Math.max(velocity.x, -BAT_MAX_HORIZONTAL_VELOCITY);
     }
 
     if(isOnGround()) {
@@ -64,6 +71,12 @@ class Player extends ActiveEntity
     if(Input.pressed(Key.UP)) {
       if(isBat) {
         velocity.y -= FLAP_POWER;
+        if(Input.check(Key.LEFT)) {
+          velocity.x -= FLAP_POWER/4;
+        }
+        if(Input.check(Key.RIGHT)) {
+          velocity.x += FLAP_POWER/4;
+        }
         sprite.play("batflap");
       }
       else if(isOnGround()) {
@@ -90,6 +103,9 @@ class Player extends ActiveEntity
     }
 
     animate();
+
+    HXP.scene.camera.x = Math.floor(centerX / HXP.screen.width) * HXP.screen.width;
+    HXP.scene.camera.y = Math.floor(centerY / HXP.screen.height) * HXP.screen.height;
 
     super.update();
   }
